@@ -23,7 +23,30 @@ type Semver struct {
 	major, minor, patch, pre, build string
 }
 
-// Regex for matching semantic version strings
+/* Regex for matching semantic version strings, explained:
+ * '^'
+ * '(0|[1-9]\\d*)'	 								// major
+ * '\\.(0|[1-9]\\d*)'	 							// minor
+ * '\\.(0|[1-9]\\d*)'	 							// patch
+ * '(?:-'	 										// start prerelease
+ * '('	 											// capture
+ * '(?:' 											// first identifier
+ * '0|' 											// 0, or
+ * '[1-9]\\d*|' 									// numeric identifier, or
+ * '\\d*[a-zA-Z-][a-zA-Z0-9-]*' 					// id with at least one non-number
+ * ')' 												// end first identifier
+ * '(?:\\.'  										// dot-separated
+ * '(?:0|[1-9]\\d*|\\d*[a-zA-Z-][a-zA-Z0-9-]*)'  	// identifier
+ * ')*'  											// zero or more of those
+ * ')'  											// end prerelease capture
+ * ')?'  											// prerelease is optional
+ * '(?:'  											// build tag (non-capturing)
+ * '\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*'  		// pretty much anything goes
+ * ')?' 											// build tag is optional
+ * '$'
+ *
+ * Credit: https://github.com/mojombo/semver/issues/110#issuecomment-19433829
+ */
 var rxMatch, _ = regexp.Compile("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][a-zA-Z0-9-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][a-zA-Z0-9-]*))*))?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$")
 
 // Return in the same format as provided, when applicable
