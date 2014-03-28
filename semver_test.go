@@ -7,7 +7,7 @@ import (
 func TestConStructor(t *testing.T) {
 	var ver1 = "3.6.1"
 	v1 := ConStructor(ver1)
-	var result = (v1.major == "3" && v1.minor == "6" && v1.patch == "1")
+	var result = (v1.major == 3 && v1.minor == 6 && v1.patch == 1)
 	if !result {
 		t.Errorf("Constructor failed on %s, returned %+v", ver1, v1)
 	}
@@ -28,7 +28,7 @@ func TestConStructor(t *testing.T) {
 
 	var ver4 = "1.3.0-rc.1+exp.sha.5114f85"
 	v4 := ConStructor(ver4)
-	result = (v4.major == "1" && v4.minor == "3" && v4.patch == "0" && v4.pre == "rc.1" && v4.build == "exp.sha.5114f85")
+	result = (v4.major == 1 && v4.minor == 3 && v4.patch == 0 && v4.pre == "rc.1" && v4.build == "exp.sha.5114f85")
 	if !result {
 		t.Errorf("Constructor failed on %s, returned %+v", ver4, v4)
 	}

@@ -12,7 +12,7 @@ import (
  */
 
 // This is the current version of this package
-var Version = "1.0.0"
+var Version = "1.1.0"
 
 /* Struct for semver string comprehension and manipulation.
  * This type and the methods associated are meant only for internal use,
@@ -21,7 +21,8 @@ var Version = "1.0.0"
  */
 
 type Semver struct {
-	major, minor, patch, pre, build string
+	major, minor, patch uint64
+	pre, build          string
 }
 
 const (
@@ -59,7 +60,7 @@ var rxNumeric, _ = regexp.Compile("^(0|[1-9])+$") // For checking pre-release id
 
 // Return in the same format as provided, when applicable
 func (ver Semver) ConvertToString() string {
-	version := strings.Join([]string{ver.major, ver.minor, ver.patch}, ".")
+	version := strings.Join([]string{strconv.FormatUint(ver.major, 10), strconv.FormatUint(ver.minor, 10), strconv.FormatUint(ver.patch, 10)}, ".")
 	if len(ver.pre) > 0 {
 		version = strings.Join([]string{version, ver.pre}, "-")
 	}
@@ -72,7 +73,7 @@ func (ver Semver) ConvertToString() string {
 // Puntastic function to make a struct from a version string
 // This makes it easier to deal with various parts
 func ConStructor(version string) *Semver {
-	var ver, bld, rel, maj, min, pat string
+	var ver, bld, rel, a, b, c string
 	ver = version
 	if strings.Index(version, "+") > -1 {
 		ver, bld = extractor(version, "+")
@@ -80,8 +81,11 @@ func ConStructor(version string) *Semver {
 	if strings.Index(ver, "-") > -1 {
 		ver, rel = extractor(ver, "-")
 	}
-	maj, ver = extractor(ver, ".")
-	min, pat = extractor(ver, ".")
+	a, ver = extractor(ver, ".")
+	b, c = extractor(ver, ".")
+	maj, _ := strconv.ParseUint(a, 10, 0)
+	min, _ := strconv.ParseUint(b, 10, 0)
+	pat, _ := strconv.ParseUint(c, 10, 0)
 	return &Semver{major: maj, minor: min, patch: pat, pre: rel, build: bld}
 }
 
@@ -174,16 +178,13 @@ func (a Semver) edgierThan(b Semver) bool {
 func (a *Semver) incrementVersion(enum string) {
 	switch enum {
 	case "major":
-		newVer, _ := strconv.ParseInt(a.major, 10, 0)
-		a.major = strconv.Itoa(int(newVer) + 1)
-		a.minor, a.patch = "0", "0"
+		a.major += 1
+		a.minor, a.patch = 0, 0
 	case "minor":
-		newVer, _ := strconv.ParseInt(a.minor, 10, 0)
-		a.minor = strconv.Itoa(int(newVer) + 1)
-		a.patch = "0"
+		a.minor += 1
+		a.patch = 0
 	case "patch":
-		newVer, _ := strconv.ParseInt(a.patch, 10, 0)
-		a.patch = strconv.Itoa(int(newVer) + 1)
+		a.patch += 1
 	}
 
 }
