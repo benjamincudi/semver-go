@@ -4,6 +4,88 @@ import (
 	"testing"
 )
 
+func TestConStructor(t *testing.T) {
+	var ver1 = "3.6.1"
+	v1 := ConStructor(ver1)
+	var result = (v1.major == "3" && v1.minor == "6" && v1.patch == "1")
+	if !result {
+		t.Errorf("Constructor failed on %s, returned %+v", ver1, v1)
+	}
+
+	var ver2 = "1.0.0-alpha.3"
+	v2 := ConStructor(ver2)
+	result = (v2.pre == "alpha.3")
+	if !result {
+		t.Errorf("Constructor failed on %s, returned %+v", ver2, v2)
+	}
+
+	var ver3 = "8.7.9+exp.sha.111334"
+	v3 := ConStructor(ver3)
+	result = (v3.build == "exp.sha.111334")
+	if !result {
+		t.Errorf("Constructor failed on %s, returned %+v", ver3, v3)
+	}
+
+	var ver4 = "1.3.0-rc.1+exp.sha.5114f85"
+	v4 := ConStructor(ver4)
+	result = (v4.major == "1" && v4.minor == "3" && v4.patch == "0" && v4.pre == "rc.1" && v4.build == "exp.sha.5114f85")
+	if !result {
+		t.Errorf("Constructor failed on %s, returned %+v", ver4, v4)
+	}
+
+}
+
+func TestConvertToString(t *testing.T) {
+	var ver1 = "3.6.1"
+	v1 := ConStructor(ver1)
+	var result = (ver1 == v1.ConvertToString())
+	if !result {
+		t.Errorf("String Conversion failed on %s, returned %+v", ver1, v1.ConvertToString())
+	}
+
+	var ver2 = "1.0.0-alpha.3"
+	v2 := ConStructor(ver2)
+	result = (ver2 == v2.ConvertToString())
+	if !result {
+		t.Errorf("Constructor failed on %s, returned %+v", ver2, v2.ConvertToString())
+	}
+
+	var ver3 = "8.7.9+exp.sha.111334"
+	v3 := ConStructor(ver3)
+	result = (ver3 == v3.ConvertToString())
+	if !result {
+		t.Errorf("Constructor failed on %s, returned %+v", ver3, v3.ConvertToString())
+	}
+
+	var ver4 = "1.3.0-rc.1+exp.sha.5114f85"
+	v4 := ConStructor(ver4)
+	result = (ver4 == v4.ConvertToString())
+	if !result {
+		t.Errorf("Constructor failed on %s, returned %+v", ver4, v4.ConvertToString())
+	}
+}
+
+func TestComparisons(t *testing.T) {
+	ver1, ver2, ver3, ver4, ver5 := "1.3.0", "1.3.2", "1.4.0", "2.0.1", "2.0.1+build.125124"
+	v1 := ConStructor(ver1)
+	v2 := ConStructor(ver2)
+	v3 := ConStructor(ver3)
+	v4 := ConStructor(ver4)
+	v5 := ConStructor(ver5)
+	if v1.NewerThan(*v2) {
+		t.Errorf("%s is not newer than %s", ver1, ver2)
+	}
+	if v5.OlderThan(*v1) {
+		t.Errorf("%s is not older than %s", ver5, ver1)
+	}
+	if v3.OlderThan(*v2) {
+		t.Errorf("%s is not older than %s", ver3, ver2)
+	}
+	if !v4.EquivalentTo(*v5) {
+		t.Errorf("%s is actually equivalent to %s", ver4, ver5)
+	}
+}
+
 /* Semantic Versioning 2.0.0
  * http://semver.org/
  *
@@ -53,7 +135,7 @@ func TestIncrement(t *testing.T) {
 	/*	6) 	Patch version Z (x.y.Z | x > 0) MUST be incremented if only backwards compatible bug fixes
 	 *		are introduced. A bug fix is defined as an internal change that fixes incorrect behavior.
 	 */
-	ver = Increment(ver, "patch")
+	ver = Increment(ver, PATCH)
 	if ver != "1.3.10" {
 		t.Errorf("New version should be 1.3.10, was: ", ver)
 	}
@@ -65,8 +147,8 @@ func TestIncrement(t *testing.T) {
 	 *		It MAY include patch level changes.
 	 *		Patch version MUST be reset to 0 when minor version is incremented.
 	 */
-	ver = Increment(ver, "patch")
-	ver = Increment(ver, "minor")
+	ver = Increment(ver, PATCH)
+	ver = Increment(ver, MINOR)
 	if ver != "1.4.0" {
 		t.Errorf("New version should be 1.4.0, was: ", ver)
 	}
@@ -75,10 +157,10 @@ func TestIncrement(t *testing.T) {
 	 *		It MAY include minor and patch level changes.
 	 *		Patch and minor version MUST be reset to 0 when major version is incremented.
 	 */
-	ver = Increment(ver, "patch")
-	ver = Increment(ver, "minor")
-	ver = Increment(ver, "patch")
-	ver = Increment(ver, "major")
+	ver = Increment(ver, PATCH)
+	ver = Increment(ver, MINOR)
+	ver = Increment(ver, PATCH)
+	ver = Increment(ver, MAJOR)
 	if ver != "2.0.0" {
 		t.Errorf("New version should be 2.0.0, was: ", ver)
 	}

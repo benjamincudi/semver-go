@@ -12,7 +12,7 @@ import (
  */
 
 // This is the current version of this package
-var Version = "0.4.1"
+var Version = "1.0.0"
 
 /* Struct for semver string comprehension and manipulation.
  * This type and the methods associated are meant only for internal use,
@@ -23,6 +23,12 @@ var Version = "0.4.1"
 type Semver struct {
 	major, minor, patch, pre, build string
 }
+
+const (
+	PATCH string = "patch"
+	MINOR string = "minor"
+	MAJOR string = "major"
+)
 
 /* Regex for matching semantic version strings, explained:
  * '^'
@@ -49,7 +55,7 @@ type Semver struct {
  * Credit: https://github.com/mojombo/semver/issues/110#issuecomment-19433829
  */
 var rxMatch, _ = regexp.Compile("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][a-zA-Z0-9-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][a-zA-Z0-9-]*))*))?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$")
-var rxNumeric, _ = regexp.Compile("^(0|[1-9])+$")
+var rxNumeric, _ = regexp.Compile("^(0|[1-9])+$") // For checking pre-release identifiers to see if they are pure numeric
 
 // Return in the same format as provided, when applicable
 func (ver Semver) ConvertToString() string {
@@ -164,19 +170,22 @@ func (a Semver) edgierThan(b Semver) bool {
 	return false
 }
 
-func (a *Semver) IncrementMajor() {
-	newVer, _ := strconv.ParseInt(a.major, 10, 0)
-	a.major = strconv.Itoa(int(newVer) + 1)
-	a.minor, a.patch = "0", "0"
-}
-func (a *Semver) IncrementMinor() {
-	newVer, _ := strconv.ParseInt(a.minor, 10, 0)
-	a.minor = strconv.Itoa(int(newVer) + 1)
-	a.patch = "0"
-}
-func (a *Semver) IncrementPatch() {
-	newVer, _ := strconv.ParseInt(a.patch, 10, 0)
-	a.patch = strconv.Itoa(int(newVer) + 1)
+// Normal version components can be bumped simply
+func (a *Semver) incrementVersion(enum string) {
+	switch enum {
+	case "major":
+		newVer, _ := strconv.ParseInt(a.major, 10, 0)
+		a.major = strconv.Itoa(int(newVer) + 1)
+		a.minor, a.patch = "0", "0"
+	case "minor":
+		newVer, _ := strconv.ParseInt(a.minor, 10, 0)
+		a.minor = strconv.Itoa(int(newVer) + 1)
+		a.patch = "0"
+	case "patch":
+		newVer, _ := strconv.ParseInt(a.patch, 10, 0)
+		a.patch = strconv.Itoa(int(newVer) + 1)
+	}
+
 }
 
 /* Public API for interacting with semver strings
@@ -187,17 +196,10 @@ func IsValid(version string) bool {
 	return rxMatch.MatchString(version)
 }
 
-func Increment(version, bump string) string {
+func Increment(version, enum string) string {
 	if IsValid(version) {
 		a := ConStructor(version)
-		switch bump {
-		case "major":
-			a.IncrementMajor()
-		case "minor":
-			a.IncrementMinor()
-		case "patch":
-			a.IncrementPatch()
-		}
+		a.incrementVersion(enum)
 		return a.ConvertToString()
 	}
 	return "Invalid Version"
