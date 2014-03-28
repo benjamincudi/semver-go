@@ -152,18 +152,9 @@ func (a Semver) edgierThan(b Semver) bool {
 		}
 		if rxNumeric.MatchString(ed[key]) && rxNumeric.MatchString(gy[key]) {
 			if ed[key] != gy[key] {
-				if len(ed[key]) > len(gy[key]) {
-					return true
-				} else {
-					if len(ed[key]) < len(gy[key]) {
-						return false
-					}
-					for k := range ed[key] {
-						if (ed[key])[k:k+1] != (gy[key])[k:k+1] {
-							return (ed[key])[k:k+1] > (gy[key])[k:k+1]
-						}
-					}
-				}
+				left, _ := strconv.ParseInt(ed[key], 10, 0)
+				right, _ := strconv.ParseInt(gy[key], 10, 0)
+				return left > right
 			}
 		}
 		if ed[key] != gy[key] {
