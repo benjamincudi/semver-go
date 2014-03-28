@@ -12,7 +12,7 @@ import (
  */
 
 // This is the current version of this package
-var Version = "0.4.0"
+var Version = "0.4.1"
 
 /* Struct for semver string comprehension and manipulation.
  * This type and the methods associated are meant only for internal use,

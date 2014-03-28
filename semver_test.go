@@ -77,6 +77,7 @@ func TestIncrement(t *testing.T) {
 	 */
 	ver = Increment(ver, "patch")
 	ver = Increment(ver, "minor")
+	ver = Increment(ver, "patch")
 	ver = Increment(ver, "major")
 	if ver != "2.0.0" {
 		t.Errorf("New version should be 2.0.0, was: ", ver)
