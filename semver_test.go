@@ -204,7 +204,7 @@ func TestIsNewer(t *testing.T) {
 	var count = len(prereleaseVersions) - 1
 	for key, version := range prereleaseVersions {
 		if key < count {
-			result = IsNewer(version, prereleaseVersions[key+1])
+			result = IsNewer(prereleaseVersions[key+1], version)
 			if !result {
 				t.Errorf("Version %s is newer than %s, but was reported otherwise", prereleaseVersions[key+1], version)
 			}
