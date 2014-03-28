@@ -12,7 +12,7 @@ import (
  */
 
 // This is the current version of this package
-var Version = "0.3.0"
+var Version = "0.4.0"
 
 /* Struct for semver string comprehension and manipulation.
  * This type and the methods associated are meant only for internal use,
@@ -173,6 +173,21 @@ func (a Semver) edgierThan(b Semver) bool {
 	return false
 }
 
+func (a *Semver) IncrementMajor() {
+	newVer, _ := strconv.ParseInt(a.major, 10, 0)
+	a.major = strconv.Itoa(int(newVer) + 1)
+	a.minor, a.patch = "0", "0"
+}
+func (a *Semver) IncrementMinor() {
+	newVer, _ := strconv.ParseInt(a.minor, 10, 0)
+	a.minor = strconv.Itoa(int(newVer) + 1)
+	a.patch = "0"
+}
+func (a *Semver) IncrementPatch() {
+	newVer, _ := strconv.ParseInt(a.patch, 10, 0)
+	a.patch = strconv.Itoa(int(newVer) + 1)
+}
+
 /* Public API for interacting with semver strings
  * If you call anything other than these, you're taking ownership of the results
  */
@@ -182,7 +197,19 @@ func IsValid(version string) bool {
 }
 
 func Increment(version, bump string) string {
-	return ""
+	if IsValid(version) {
+		a := ConStructor(version)
+		switch bump {
+		case "major":
+			a.IncrementMajor()
+		case "minor":
+			a.IncrementMinor()
+		case "patch":
+			a.IncrementPatch()
+		}
+		return a.ConvertToString()
+	}
+	return "Invalid Version"
 }
 
 // Returns true if newer, false if not OR if either input isn't a valid semver
