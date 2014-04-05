@@ -56,7 +56,9 @@ const (
  * Credit: https://github.com/mojombo/semver/issues/110#issuecomment-19433829
  */
 var rxMatch, _ = regexp.Compile("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][a-zA-Z0-9-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][a-zA-Z0-9-]*))*))?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$")
-var rxNumeric, _ = regexp.Compile("^(0|[1-9])+$") // For checking pre-release identifiers to see if they are pure numeric
+var rxNumeric, _ = regexp.Compile("^(0|[1-9])+$")                                                                                 // For checking pre-release identifiers to see if they are pure numeric
+var rxPre, _ = regexp.Compile("^((?:0|[1-9]\\d*|\\d*[a-zA-Z-][a-zA-Z0-9-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][a-zA-Z0-9-]*))*)$") // The rules for a pre-release string, omitting the leading dash
+var rxBuild, _ = regexp.Compile("^(?:[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)$")                                                       // The rules for a build string, omitting the leading plus
 
 // Return in the same format as provided, when applicable
 func (ver Semver) ConvertToString() string {
@@ -111,7 +113,7 @@ func (a Semver) OlderThan(b Semver) bool {
 				return true
 			}
 			if a.patch == b.patch {
-				// Compare pre-release
+				return b.edgierThan(a)
 			}
 		}
 	}
