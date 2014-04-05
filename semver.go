@@ -12,7 +12,7 @@ import (
  */
 
 // This is the current version of this package
-var Version = "1.1.0"
+var Version = "2.0.0-alpha.0.1.0"
 
 type PrereleaseTag struct {
 	tag string
@@ -99,7 +99,10 @@ func (ver Semver) ConvertToString() string {
 
 // Puntastic function to make a struct from a version string
 // This makes it easier to deal with various parts
-func ConStructor(version string) *Semver {
+func ConStructor(version string) (*Semver, string) {
+	if !IsValid(version) {
+		return &Semver{}, "Not a valid version string"
+	}
 	var ver, err, bd, rl, a, b, c string
 	var bld BuildTag
 	var rel PrereleaseTag
@@ -107,23 +110,23 @@ func ConStructor(version string) *Semver {
 	if strings.Index(version, "+") > -1 {
 		ver, bd = extractor(version, "+")
 		bld, err = makeBuild(bd)
-	}
-	if len(err) > 0 {
-		return &Semver{}
+		if len(err) > 0 {
+			return &Semver{}, "Not a valid build string"
+		}
 	}
 	if strings.Index(ver, "-") > -1 {
 		ver, rl = extractor(ver, "-")
 		rel, err = makePrerelease(rl)
-	}
-	if len(err) > 0 {
-		return &Semver{}
+		if len(err) > 0 {
+			return &Semver{}, "Not a valid prerelease string"
+		}
 	}
 	a, ver = extractor(ver, ".")
 	b, c = extractor(ver, ".")
 	maj, _ := strconv.ParseUint(a, 10, 0)
 	min, _ := strconv.ParseUint(b, 10, 0)
 	pat, _ := strconv.ParseUint(c, 10, 0)
-	return &Semver{major: maj, minor: min, patch: pat, pre: rel, build: bld}
+	return &Semver{major: maj, minor: min, patch: pat, pre: rel, build: bld}, ""
 }
 
 // Helper to do tediously repetitive slicing of strings
@@ -236,7 +239,7 @@ func IsValid(version string) bool {
 
 func Increment(version, enum string) string {
 	if IsValid(version) {
-		a := ConStructor(version)
+		a, _ := ConStructor(version)
 		a.incrementVersion(enum)
 		return a.ConvertToString()
 	}
@@ -244,10 +247,10 @@ func Increment(version, enum string) string {
 }
 
 // Returns true if newer, false if not OR if either input isn't a valid semver
-func IsNewer(check, base string) bool {
-	if IsValid(check) && IsValid(base) {
-		a := ConStructor(check)
-		b := ConStructor(base)
+func IsNewer(s, v string) bool {
+	if IsValid(s) && IsValid(v) {
+		a, _ := ConStructor(s)
+		b, _ := ConStructor(v)
 		return a.NewerThan(*b)
 	}
 	return false
