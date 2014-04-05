@@ -14,21 +14,21 @@ func TestConStructor(t *testing.T) {
 
 	var ver2 = "1.0.0-alpha.3"
 	v2 := ConStructor(ver2)
-	result = (v2.pre == "alpha.3")
+	result = (v2.pre.tag == "alpha.3")
 	if !result {
 		t.Errorf("Constructor failed on %s, returned %+v", ver2, v2)
 	}
 
 	var ver3 = "8.7.9+exp.sha.111334"
 	v3 := ConStructor(ver3)
-	result = (v3.build == "exp.sha.111334")
+	result = (v3.build.tag == "exp.sha.111334")
 	if !result {
 		t.Errorf("Constructor failed on %s, returned %+v", ver3, v3)
 	}
 
 	var ver4 = "1.3.0-rc.1+exp.sha.5114f85"
 	v4 := ConStructor(ver4)
-	result = (v4.major == 1 && v4.minor == 3 && v4.patch == 0 && v4.pre == "rc.1" && v4.build == "exp.sha.5114f85")
+	result = (v4.major == 1 && v4.minor == 3 && v4.patch == 0 && v4.pre.tag == "rc.1" && v4.build.tag == "exp.sha.5114f85")
 	if !result {
 		t.Errorf("Constructor failed on %s, returned %+v", ver4, v4)
 	}

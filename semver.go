@@ -46,7 +46,8 @@ func makeBuild(tag string) (BuildTag, string) {
 
 type Semver struct {
 	major, minor, patch uint64
-	pre, build          string
+	pre                 PrereleaseTag
+	build               BuildTag
 }
 
 const (
@@ -87,11 +88,11 @@ var rxBuild, _ = regexp.Compile("^(?:[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)$")     
 // Return in the same format as provided, when applicable
 func (ver Semver) ConvertToString() string {
 	version := strings.Join([]string{strconv.FormatUint(ver.major, 10), strconv.FormatUint(ver.minor, 10), strconv.FormatUint(ver.patch, 10)}, ".")
-	if len(ver.pre) > 0 {
-		version = strings.Join([]string{version, ver.pre}, "-")
+	if len(ver.pre.tag) > 0 {
+		version = strings.Join([]string{version, ver.pre.tag}, "-")
 	}
-	if len(ver.build) > 0 {
-		version = strings.Join([]string{version, ver.build}, "+")
+	if len(ver.build.tag) > 0 {
+		version = strings.Join([]string{version, ver.build.tag}, "+")
 	}
 	return version
 }
@@ -99,13 +100,23 @@ func (ver Semver) ConvertToString() string {
 // Puntastic function to make a struct from a version string
 // This makes it easier to deal with various parts
 func ConStructor(version string) *Semver {
-	var ver, bld, rel, a, b, c string
+	var ver, err, bd, rl, a, b, c string
+	var bld BuildTag
+	var rel PrereleaseTag
 	ver = version
 	if strings.Index(version, "+") > -1 {
-		ver, bld = extractor(version, "+")
+		ver, bd = extractor(version, "+")
+		bld, err = makeBuild(bd)
+	}
+	if len(err) > 0 {
+		return &Semver{}
 	}
 	if strings.Index(ver, "-") > -1 {
-		ver, rel = extractor(ver, "-")
+		ver, rl = extractor(ver, "-")
+		rel, err = makePrerelease(rl)
+	}
+	if len(err) > 0 {
+		return &Semver{}
 	}
 	a, ver = extractor(ver, ".")
 	b, c = extractor(ver, ".")
@@ -176,12 +187,12 @@ func (a Semver) EquivalentTo(b Semver) bool {
 
 // Determines if a's pre-release string is higher precedence than b's
 func (a Semver) edgierThan(b Semver) bool {
-	if len(a.pre) == 0 || len(b.pre) == 0 {
+	if len(a.pre.tag) == 0 || len(b.pre.tag) == 0 {
 		// Not having a pre-release string signifies precedence
-		return a.pre < b.pre
+		return a.pre.tag < b.pre.tag
 	}
-	ed := strings.Split(a.pre, ".")
-	gy := strings.Split(b.pre, ".")
+	ed := strings.Split(a.pre.tag, ".")
+	gy := strings.Split(b.pre.tag, ".")
 	for key := range ed {
 		if len(gy) < key+1 {
 			return true
