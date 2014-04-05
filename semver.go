@@ -14,6 +14,30 @@ import (
 // This is the current version of this package
 var Version = "1.1.0"
 
+type PrereleaseTag struct {
+	tag string
+}
+
+func makePrerelease(tag string) (PrereleaseTag, string) {
+	if rxPre.MatchString(tag) {
+		return PrereleaseTag{tag: tag}, ""
+	} else {
+		return PrereleaseTag{}, "Invalid prerelease tag"
+	}
+}
+
+type BuildTag struct {
+	tag string
+}
+
+func makeBuild(tag string) (BuildTag, string) {
+	if rxBuild.MatchString(tag) {
+		return BuildTag{tag: tag}, ""
+	} else {
+		return BuildTag{}, "Invalid build tag"
+	}
+}
+
 /* Struct for semver string comprehension and manipulation.
  * This type and the methods associated are meant only for internal use,
  * and they have been written only with the intention of making the
