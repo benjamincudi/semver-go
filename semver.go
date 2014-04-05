@@ -12,7 +12,7 @@ import (
  */
 
 // This is the current version of this package
-var Version = "2.0.0-alpha.0.1.0"
+var Version = "2.0.0-alpha.0.1.1"
 
 type PrereleaseTag struct {
 	tag string
@@ -141,16 +141,13 @@ func extractor(base, mark string) (string, string) {
 func (a Semver) OlderThan(b Semver) bool {
 	if a.major < b.major {
 		return true
-	}
-	if a.major == b.major {
+	} else if a.major == b.major {
 		if a.minor < b.minor {
 			return true
-		}
-		if a.minor == b.minor {
+		} else if a.minor == b.minor {
 			if a.patch < b.patch {
 				return true
-			}
-			if a.patch == b.patch {
+			} else if a.patch == b.patch {
 				return b.edgierThan(a)
 			}
 		}
@@ -163,16 +160,13 @@ func (a Semver) OlderThan(b Semver) bool {
 func (a Semver) NewerThan(b Semver) bool {
 	if a.major > b.major {
 		return true
-	}
-	if a.major == b.major {
+	} else if a.major == b.major {
 		if a.minor > b.minor {
 			return true
-		}
-		if a.minor == b.minor {
+		} else if a.minor == b.minor {
 			if a.patch > b.patch {
 				return true
-			}
-			if a.patch == b.patch {
+			} else if a.patch == b.patch {
 				return a.edgierThan(b)
 			}
 		}
@@ -182,10 +176,7 @@ func (a Semver) NewerThan(b Semver) bool {
 
 // If version and pre-release strings are equivalent, returns true.
 func (a Semver) EquivalentTo(b Semver) bool {
-	if a.OlderThan(b) || a.NewerThan(b) {
-		return false
-	}
-	return true
+	return a.OlderThan(b) == a.NewerThan(b)
 }
 
 // Determines if a's pre-release string is higher precedence than b's
